@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bliksemradar.be</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin="" />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin=""></script>
+        <!-- jquery -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌩</text></svg>">
+</head>
+
+<style>
+    html,
+    body {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #map {
+        height: 100vh;
+    }
+</style>
+
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map', {
+            maxBounds: [
+                [49, 0],
+                [55, 12],
+            ],
+            maxBoundsViscosity: 1,
+        }).setView([51.342752935837076, 4.707704695763203], 7);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            minZoom: 7,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        markers = [];
+
+        function renderMarkers() {
+            markers.forEach(marker => {
+                map.removeLayer(marker)
+            });
+
+            //marker = L.marker([51.030000000000, 4.120000000000]).addTo(map);
+
+            markers = [];
+            console.log(markers.length);
+            $.ajax({
+                type: 'GET',
+                url: 'https://nwbnlx-bliksemradar.lamdev.be/pull_strikes.php',
+                success: function (result) {
+                    // function to execute on success
+                    console.log(result);
+                    result.a.forEach(function (strike) {
+                        //console.log(strike)
+                        var marker = L.circle([strike.lat, strike.lng], {
+                            color: 'red',
+                            fillColor: '#f03',
+                            fillOpacity: 0.5,
+                            radius: 50
+                        }).addTo(map);
+                        markers.push(marker);
+                    });
+
+                    result.b.forEach(function (strike) {
+                        var marker = L.circle([strike.lat, strike.lng], {
+                            color: 'gold',
+                            fillColor: 'gold',
+                            fillOpacity: 0.5,
+                            radius: 50
+                        }).addTo(map);
+                        markers.push(marker)
+                    });
+                    result.c.forEach(function (strike) {
+                        var marker = L.circle([strike.lat, strike.lng], {
+                            color: 'green',
+                            fillColor: 'green',
+                            fillOpacity: 0.5,
+                            radius: 50
+                        }).addTo(map);
+                        markers.push(marker)
+                    });
+                    result.d.forEach(function(strike) {
+                        var marker = L.circle([strike.lat,strike.lng], {
+                            color: 'blue',
+                            fillColor: 'blue',
+                            fillOpacity: 0.5,
+                            radius: 50
+                        }).addTo(map);
+                        markers.push(marker)
+                    });
+
+                },
+                error: function (error) {
+                    //function to execute on error
+                    console.log(error) // logs error into console
+                }
+            })
+        }
+        renderMarkers();
+        setInterval(function () { renderMarkers(); }, 15000);
+    </script>
+</body>
+
+</html>
